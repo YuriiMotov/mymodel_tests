@@ -1,4 +1,4 @@
-from typing import Any, cast
+from typing import Any, TypeVar, cast
 
 
 class MyModelField:
@@ -36,5 +36,17 @@ class Meta(type):
         return obj
 
 
+T = TypeVar("T", bound="ModelBase")
+
 class ModelBase(metaclass=Meta):
-    pass
+
+    @classmethod
+    def validate(cls: type[T], data: dict[str, Any], partial: bool = False) -> T:
+        if partial is False:
+            raise NotImplementedError()
+
+        obj = cls.__new__(cls)
+        for field_name, field_val in data.items():
+            setattr(obj, field_name, field_val)
+        return obj
+
