@@ -1,6 +1,8 @@
 import typing
 from typing import Any, TypeVar, cast
 
+from src.validate import Undefined, field_validate
+
 
 class MyModelField:
     def __init__(self, field_name, field_annotation):
@@ -26,11 +28,6 @@ class MyModelField:
         instance.__dict__[attr_name] = value
 
 
-class ValidationError(Exception):
-    def __init__(self, msg: str):
-        self.msg = msg
-
-
 @typing.dataclass_transform(kw_only_default=True)
 class Meta(type):
     def __new__(cls, name, bases, dct: dict[str, Any]):
@@ -50,11 +47,14 @@ class Meta(type):
                 msg = "Can only accept keyword arguments"
                 raise RuntimeError(msg)
             if fields_annotations:
-                for field_name, field_type in fields_annotations.items():  # noqa: B007
-                    if (field_name not in kwargs) and (field_name not in defaults):
-                        msg = f"No value for required field was provided: {field_name}"
-                        raise ValidationError(msg)
-                    val = kwargs.get(field_name, defaults.get(field_name))
+                for field_name, field_type in fields_annotations.items():
+                    default = defaults.get(field_name, Undefined)
+                    val = field_validate(
+                        field_name=field_name,
+                        field_type=field_type,
+                        default=default,
+                        value=kwargs.get(field_name, Undefined),
+                    )
                     self.__setattr__(field_name, val)
 
         obj.__init__ = __init__

@@ -6,6 +6,7 @@ from src.main import ModelBase
 class MyClass(ModelBase):
     int_field: int
     str_field: str
+    field_with_default: str = "default value"
 
 
 def test__not_set__attribute_error():
@@ -20,6 +21,18 @@ def test__not_set__attribute_error():
 
     with pytest.raises(AttributeError):
         _ = inst.str_field
+
+
+def test__default__not_set__attribute_error():
+    """
+    Attempt to access atribute that hasn't been set yet causes AttributeError even if
+    this field has default value
+    """
+
+    inst = MyClass.validate({}, partial=True)
+
+    with pytest.raises(AttributeError):
+        _ = inst.field_with_default
 
 
 def test__validate__value_stored_in_right_attribute():

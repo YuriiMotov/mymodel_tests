@@ -1,6 +1,7 @@
 import pytest
 
-from src.main import ModelBase, ValidationError
+from src.main import ModelBase
+from src.validate import ValidationError
 
 
 class MyClass(ModelBase):
